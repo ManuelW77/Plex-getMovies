@@ -145,7 +145,7 @@ def getTrailer(title, jahr):
     data = json.load(response)
 
     try:
-        return "<a href='https://www.youtube.com/watch?v=" + data["items"][0]["id"]["videoId"] + "'>Movie Trailer</a>"
+        return "<a href='https://www.youtube.com/watch?v=" + data["items"][0]["id"]["videoId"] + "' target='_blank'>Movie Trailer</a>"
     except:
         return "-"
 
