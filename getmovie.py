@@ -1,18 +1,31 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Das ist mein erstes kleines Python Programm. Es ist eigentlich mehr eine Übung.
+Das Programm dient dazu die Filme von Plex auszulesen und als HTML Datei zu speichern.
+"""
+
+# Konfiguration Start
+PlexServer = "http://192.168.1.10:32400" # Server IP : Port
+safe_to_path = "/Users/manuel/Desktop/Filmliste.html" # Pfad wohin die HTML Datei geschrieben werden soll
+TMDB_api_key = "0bb5e601a83a20c54f09fbc45c6547f4" # API Key für TMDB
+# Konfiguration Ende
+
 import urllib2
 import json
+from time import localtime
 
 try:
     import xml.etree.cElementTree as etree
 except ImportError:
     import xml.etree.ElementTree as etree
 
-PlexServer = "http://192.168.1.10:32400/library/sections/7/all"
+# Plex Pfad anhängen
+PlexServer = PlexServer + "/library/sections/7/all"
 
 """
-XML von Plex holen
+XML Filmliste von Plex holen
 """
 def getXMLFromPMS(URL):
     request = urllib2.Request(URL , None)
@@ -26,9 +39,14 @@ def getXMLFromPMS(URL):
 HTML Datei erzeugen
 """
 def htmlausgabe(data):
-    datei = open("/Users/manuel/Desktop/Filmliste.html", "w")
+    global safe_to_path
 
-    # Kopf schreiben
+    jahr, monat, tag, stunde, minute = localtime()[0:5]
+    gen_time = "%02i.%02i.%04i / %02i:%02i" % (tag,monat,jahr,stunde,minute)
+
+    datei = open(safe_to_path, "w")
+
+    # Header schreiben
     datei.write("""
           <html>
           <head>
@@ -42,26 +60,34 @@ def htmlausgabe(data):
              <body>\n
       """)
 
-    #Inhalt schreiben
+    #Tabellen Kopf schreiben
     datei.write("""
             <table>
                 <tr>
-                    <td colspan='5' style='width:100%'>Filmliste</td>
+                    <td colspan='4' style='width:80%; text-align:center; font-size:25pt;'>Filmliste</td>
+                    <td style='text-align:right;'>Generiert: """ + gen_time + """</td>
                 </tr>
             </table>
             <table>
                 <tr>
-                    <td style='width:20px'>Nr</td>
-                    <td style='width:150px'>Poster</td>
-                    <td style='width:300px'>Titel/Datum</td>
-                    <td style='width:80px'>Meta</td>
-                    <td>Beschreibung</td>
+                    <td style='width:20px; font-size:15pt;'>Nr</td>
+                    <td style='width:150px; font-size:15pt;'>Poster</td>
+                    <td style='width:300px; font-size:15pt;'>Titel/Datum</td>
+                    <td style='width:80px; font-size:15pt;'>Meta</td>
+                    <td style='font-size:15pt;'>Beschreibung</td>
                 </tr>
         \n""")
 
     # the Data c, poster, title, datum, text, genre, resolution, channels
+    # Inhalte schreiben
+    c = 0
     for i in data:
-        datei.write("<tr bgcolor='#CCCCCC'>")
+        if c == 0:
+            c += 1
+            datei.write("<tr bgcolor='#FFFFFF'>")
+        else:
+            c = 0
+            datei.write("<tr bgcolor='#CCCCCC'>")
 
         for inhalt in i:
             if inhalt and not type(inhalt) is int:
@@ -80,19 +106,20 @@ def htmlausgabe(data):
 
     # Fuss schreiben
     datei.write(" </body> </html>\n")
-
     datei.close()
 
+"""
+Links der Filmposter von TMDB holen
+"""
 def getImages(title):
-    headers = {
-      'Accept': 'application/json'
-    }
+    global TMDB_api_key
 
-    # URL Quote
+    # Leer und Sonderzeichen von String entfernen / URL Quote
     title = urllib2.quote(title)
 
     # Film Poster holen
-    request = urllib2.Request('http://api.themoviedb.org/3/search/movie?api_key=0dd32eece72fc9640fafaa5c87017fcf&language=de&query=' + title, headers=headers)
+    headers = {'Accept': 'application/json'}
+    request = urllib2.Request('http://api.themoviedb.org/3/search/movie?api_key=' + TMDB_api_key + '&language=de&query=' + title, headers=headers)
     response = urllib2.urlopen(request)
     data = json.load(response)
 
@@ -102,9 +129,10 @@ def getImages(title):
         return "-"
 
 
-
+# Alle Filme von Plex holen
 filme = getXMLFromPMS(PlexServer)
 
+# XML von Plex aufsplitten und gebrauchte Infos holen
 data = []
 c = 0
 for filmname in filme.findall("Video"):
@@ -130,8 +158,9 @@ for filmname in filme.findall("Video"):
         resolution = filmid.get("videoResolution") + "p"
         channels = filmid.get("audioChannels") + " Kanal"
 
-    title_date = "<font size='5pt'><b>" + title + "</b></font><br><br>" + datum
+    title_date = "<font style='font-size:15pt;'><b>" + title + "</b></font><br><br>" + datum
     meta = genre + "<br><br>" + resolution + "<br>" + channels
     data.append([c, poster, title_date, meta, text])
 
+# HTML Datei mit geholten Daten erzeugen
 htmlausgabe(data)
