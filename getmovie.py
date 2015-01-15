@@ -6,12 +6,10 @@ Das ist mein erstes kleines Python Programm. Es ist eigentlich mehr eine Übung.
 Das Programm dient dazu die Filme von Plex auszulesen und als HTML Datei zu speichern.
 """
 
-# Konfiguration Start
+#### Konfiguration Start
 PlexServer = "http://192.168.1.10:32400" # Server IP : Port
 safe_to_path = "/Users/manuel/Desktop/" # Pfad wohin die HTML Datei geschrieben werden soll
-TMDB_api_key = "0bb5e601a83a20c54f09fbc45c6547f4" # API Key für TMDB
-YOUTUBE_api_key = "AIzaSyBJdNrC3YAFJQbKpktxAWiYYwRdkMHVEXU" # API Key für Youtube
-# Konfiguration Ende
+#### Konfiguration Ende
 
 import urllib2
 import json
@@ -22,8 +20,10 @@ try:
 except ImportError:
     import xml.etree.ElementTree as etree
 
-# Plex Pfad anhängen
+# Plex Pfad und APIs
 PlexServer = PlexServer + "/library/sections/7/all"
+TMDB_api_key = "0bb5e601a83a20c54f09fbc45c6547f4" # API Key für TMDB
+YOUTUBE_api_key = "AIzaSyBJdNrC3YAFJQbKpktxAWiYYwRdkMHVEXU" # API Key für Youtube
 
 """
 XML Filmliste von Plex holen
