@@ -8,7 +8,7 @@ Das Programm dient dazu die Filme von Plex auszulesen und als HTML Datei zu spei
 
 # Konfiguration Start
 PlexServer = "http://192.168.1.10:32400" # Server IP : Port
-safe_to_path = "/Users/manuel/Desktop/Filmliste.html" # Pfad wohin die HTML Datei geschrieben werden soll
+safe_to_path = "/Users/manuel/Desktop/" # Pfad wohin die HTML Datei geschrieben werden soll
 TMDB_api_key = "0bb5e601a83a20c54f09fbc45c6547f4" # API Key für TMDB
 # Konfiguration Ende
 
@@ -44,7 +44,7 @@ def htmlausgabe(data):
     jahr, monat, tag, stunde, minute = localtime()[0:5]
     gen_time = "%02i.%02i.%04i / %02i:%02i" % (tag,monat,jahr,stunde,minute)
 
-    datei = open(safe_to_path, "w")
+    datei = open(safe_to_path + "Filmliste.html", "w")
 
     # Header schreiben
     datei.write("""
