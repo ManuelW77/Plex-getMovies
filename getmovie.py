@@ -10,6 +10,7 @@ Das Programm dient dazu die Filme von Plex auszulesen und als HTML Datei zu spei
 PlexServer = "http://192.168.1.10:32400" # Server IP : Port
 safe_to_path = "/Users/manuel/Desktop/" # Pfad wohin die HTML Datei geschrieben werden soll
 TMDB_api_key = "0bb5e601a83a20c54f09fbc45c6547f4" # API Key für TMDB
+YOUTUBE_api_key = "AIzaSyBJdNrC3YAFJQbKpktxAWiYYwRdkMHVEXU" # API Key für Youtube
 # Konfiguration Ende
 
 import urllib2
@@ -128,6 +129,27 @@ def getImages(title):
     except:
         return "-"
 
+"""
+Links zu Trailern von Youtube holen
+"""
+def getTrailer(title, jahr):
+    global YOUTUBE_api_key
+
+    # Leer und Sonderzeichen von String entfernen / URL Quote
+    title = urllib2.quote("Film " + title + " " + jahr + " Trailer Deutsch German")
+
+    # Film Trailer holen
+    headers = {'Accept': 'application/json'}
+    request = urllib2.Request("https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&order=relevance&key=" + YOUTUBE_api_key + "&q=" + title, headers=headers)
+    response = urllib2.urlopen(request)
+    data = json.load(response)
+
+    try:
+        return "<a href='https://www.youtube.com/watch?v=" + data["items"][0]["id"]["videoId"] + "'>Movie Trailer</a>"
+    except:
+        return "-"
+
+
 
 # Alle Filme von Plex holen
 filme = getXMLFromPMS(PlexServer)
@@ -138,14 +160,17 @@ c = 0
 for filmname in filme.findall("Video"):
     c += 1
     zaehler = c
-    poster = getImages(filmname.get("title").encode('UTF-8').replace("3D", ""))
-    #poster = "bild"
+
     title = filmname.get("title")
     if filmname.get("originallyAvailableAt"):
-        datum = filmname.get("originallyAvailableAt")
+        jahr = filmname.get("originallyAvailableAt")[0:4]
     else:
-        datum = "-"
+        jahr = "-"
+
     text = filmname.get("summary")
+    poster = getImages(filmname.get("title").encode('UTF-8').replace("3D", ""))
+    #poster = "bild"
+    trailer = getTrailer(filmname.get("title").encode('UTF-8').replace("(3D)", ""), jahr)
 
     genre = ""
     for filmgenre in filmname.findall("Genre"):
@@ -158,7 +183,7 @@ for filmname in filme.findall("Video"):
         resolution = filmid.get("videoResolution") + "p"
         channels = filmid.get("audioChannels") + " Kanal"
 
-    title_date = "<font style='font-size:15pt;'><b>" + title + "</b></font><br><br>" + datum
+    title_date = "<font style='font-size:15pt;'><b>" + title + "</b></font><br><br>Erschienen: <b>" + jahr + "</b><br>Trailer: " + trailer
     meta = genre + "<br><br>" + resolution + "<br>" + channels
     data.append([c, poster, title_date, meta, text])
 
