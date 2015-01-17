@@ -11,9 +11,13 @@ PlexServer = "http://192.168.1.10:32400" # Server IP : Port
 safe_to_path = "/Users/manuel/Desktop/" # Pfad wohin die HTML Datei geschrieben werden soll
 #### Konfiguration Ende
 
+#http://192.168.1.10:32400/library/sections/7/all
+#addedAt
+#viewCount
+
 import urllib2
 import json
-from time import localtime
+from time import localtime, strftime, gmtime
 
 try:
     import xml.etree.cElementTree as etree
@@ -49,6 +53,10 @@ def htmlausgabe(data):
 
     # Header schreiben
     datei.write("""
+        <!--
+        Achtung: Du musst die Datei erst herunter laden und dann im Browser (Safari, Firefox, IE) öffnen!
+        -->
+
           <html>
           <head>
           <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -65,13 +73,12 @@ def htmlausgabe(data):
     datei.write("""
             <table>
                 <tr>
-                    <td colspan='4' style='width:80%; text-align:center; font-size:25pt;'>Filmliste</td>
+                    <td colspan='3' style='width:80%; text-align:center; font-size:25pt;'>Filmliste</td>
                     <td style='text-align:right;'>Generiert: """ + gen_time + """</td>
                 </tr>
             </table>
             <table>
                 <tr>
-                    <td style='width:20px; font-size:15pt;'>Nr</td>
                     <td style='width:150px; font-size:15pt;'>Poster</td>
                     <td style='width:300px; font-size:15pt;'>Titel/Datum</td>
                     <td style='width:80px; font-size:15pt;'>Meta</td>
@@ -79,17 +86,26 @@ def htmlausgabe(data):
                 </tr>
         \n""")
 
-    # the Data c, poster, title, datum, text, genre, resolution, channels
+    # the Data addDate, watched, poster, title_date, meta, text
     # Inhalte schreiben
+    data.sort(reverse=True)
     c = 0
     for i in data:
-        if c == 0:
-            c += 1
-            datei.write("<tr bgcolor='#FFFFFF'>")
-        else:
-            c = 0
-            datei.write("<tr bgcolor='#CCCCCC'>")
+        # Sort Datum löschen
+        i.pop(0)
 
+        # alternierende Zeilenfarbe
+        if i.pop(0) == 0:
+            if c == 0:
+                c += 1
+                datei.write("<tr bgcolor='#FFFFFF'>")
+            else:
+                c = 0
+                datei.write("<tr bgcolor='#CCCCCC'>")
+        else:
+            datei.write("<tr bgcolor='red'>")
+
+        # Inhalte ausgeben
         for inhalt in i:
             if inhalt and not type(inhalt) is int:
                 try:
@@ -156,21 +172,32 @@ filme = getXMLFromPMS(PlexServer)
 
 # XML von Plex aufsplitten und gebrauchte Infos holen
 data = []
-c = 0
 for filmname in filme.findall("Video"):
-    c += 1
-    zaehler = c
 
+    # Film hinzugefügt
+    sortDate = filmname.get("addedAt")
+    addDate = strftime("%d.%m.%Y", gmtime(float(sortDate)))
+
+    # Filmname
     title = filmname.get("title")
-    if filmname.get("originallyAvailableAt"):
-        jahr = filmname.get("originallyAvailableAt")[0:4]
+
+    # Erscheinungsjahr
+    if filmname.get("year"):
+        jahr = filmname.get("year") #filmname.get("originallyAvailableAt")[0:4]
     else:
         jahr = "-"
+
+    # gesehen
+    if filmname.get("viewCount"):
+        watched = 1
+    else:
+        watched = 0
 
     text = filmname.get("summary")
     poster = getImages(filmname.get("title").encode('UTF-8').replace("3D", ""))
     #poster = "bild"
     trailer = getTrailer(filmname.get("title").encode('UTF-8').replace("(3D)", ""), jahr)
+    #trailer = "trailer"
 
     genre = ""
     for filmgenre in filmname.findall("Genre"):
@@ -183,9 +210,9 @@ for filmname in filme.findall("Video"):
         resolution = filmid.get("videoResolution") + "p"
         channels = filmid.get("audioChannels") + " Kanal"
 
-    title_date = "<font style='font-size:15pt;'><b>" + title + "</b></font><br><br>Erschienen: <b>" + jahr + "</b><br>Trailer: " + trailer
+    title_date = "<font style='font-size:15pt;'><b>" + title + "</b></font><br><br>Erschienen: <b>" + jahr + "</b><br>Trailer: " + trailer + "<br><br>hinzugef&uuml;gt: " + addDate
     meta = genre + "<br><br>" + resolution + "<br>" + channels
-    data.append([c, poster, title_date, meta, text])
+    data.append([sortDate, watched, poster, title_date, meta, text])
 
 # HTML Datei mit geholten Daten erzeugen
 htmlausgabe(data)
