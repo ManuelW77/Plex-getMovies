@@ -67,8 +67,8 @@ for filmname in filme.findall("Video"):
         for filepath in file:
             #print filepath.get("file")
             try:
-                moveto = filepath.get("file").replace("%C3%BC", "ü").replace("%C3%B6", "ö").replace("%C3%A4", "ä").replace("%C3%9F", "ß").split("/")[-1]
-                os.rename(filepath.get("file").replace("%C3%BC", "ü").replace("%C3%B6", "ö").replace("%C3%A4", "ä").replace("%C3%9F", "ß"), "/media/media/Media/_delmovies/" + moveto)
+                moveto = urllib2.unquote(str(filepath.get("file"))).split("/")[-1]
+                os.rename(urllib2.unquote(str(filepath.get("file"))), "/media/media/Media/_delmovies/" + moveto)
                 #os.remove(filepath.get("file"))
                 datei.write(title.encode('UTF-8') + "\n")
                 datei.write("Gesehen am: " + date_watched + "\n")
