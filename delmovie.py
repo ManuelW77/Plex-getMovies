@@ -70,11 +70,15 @@ for filmname in filme.findall("Video"):
                 moveto = urllib2.unquote(str(filepath.get("file"))).split("/")[-1]
                 os.rename(urllib2.unquote(str(filepath.get("file"))), "/media/media/Media/_delmovies/" + moveto)
                 #os.remove(filepath.get("file"))
-                datei.write(title.encode('UTF-8') + "\n")
-                datei.write("Gesehen am: " + date_watched + "\n")
-                datei.write("Gelöscht am: " + date_del + "\n")
-                datei.write("-" * 50)
-                datei.write("\n")
+                #datei.write(title.encode('UTF-8') + "\n")
+                #datei.write("Gesehen am: " + date_watched + "\n")
+                #datei.write("Gelöscht am: " + date_del + "\n")
+                #datei.write("-" * 50)
+                #datei.write("\n")
+
+                # CSV Datei erstellen
+                datei.write(date_watched + ";" + date_del + ";" + title.encode('UTF-8') + "\n")
+
             except IOError, ioex:
                 err_datei = open(log_path + "_Err_Log.txt", "w")
                 err_datei.write(title.encode('UTF-8') + "\n")

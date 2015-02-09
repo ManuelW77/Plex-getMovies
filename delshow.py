@@ -73,11 +73,15 @@ for filmname in filme.findall("Video"):
             try:
                 #print "Ich lösche: "+grandparentTitle.encode('UTF-8'), "S"+filmname.get("parentIndex"), "E"+filmname.get("index")
                 os.remove(urllib2.unquote(str(filepath.get("file"))))
-                datei.write(grandparentTitle.encode('UTF-8') + " S"+filmname.get("parentIndex") + " E"+filmname.get("index") + "\n")
-                datei.write("Gesehen am: " + date_watched + "\n")
-                datei.write("Gelöscht am: " + date_del + "\n")
-                datei.write("-" * 50)
-                datei.write("\n")
+                #datei.write(grandparentTitle.encode('UTF-8') + " S"+filmname.get("parentIndex") + " E"+filmname.get("index") + "\n")
+                #datei.write("Gesehen am: " + date_watched + "\n")
+                #datei.write("Gelöscht am: " + date_del + "\n")
+                #datei.write("-" * 50)
+                #datei.write("\n")
+
+                # Erstelle CSV Datei -> Datum gesehen;Datum gelöscht;Show Name;Staffel;Episode
+                datei.write(date_watched + ";" + date_del + ";" + grandparentTitle.encode('UTF-8') + ";" + filmname.get("parentIndex") + ";" + filmname.get("index") + "\n")
+
             except IOError, ioex:
                 err_datei = open(log_path + "_Err_Log.txt", "w")
                 err_datei.write(urllib2.unquote(str(filepath.get("file"))) + "\n")
