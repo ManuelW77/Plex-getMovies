@@ -69,21 +69,10 @@ for filmname in filme.findall("Video"):
         # Pfad zum Ordner der zu löschenden Datei holen
         file = filmname.findall("Media/Part")
         for filepath in file:
-            # Pfad zum Ordner erzeugen
-            fp = ""
-            foldername = filepath.get("file").split("/")[:-1]
-            ### for testing
-            #foldername = filepath.get("file").split("/")[3:-1]
-            for folderpath in foldername:
-                fp = fp + folderpath..replace("%C3%BC", "ü").replace("%C3%B6", "ö").replace("%C3%A4", "ä").replace("%C3%9F", "ß") + "/"
-
-            #### for testing
-            #fp = "/Volumes/"+fp
-
             # Dateien löschen
             try:
                 #print "Ich lösche: "+grandparentTitle.encode('UTF-8'), "S"+filmname.get("parentIndex"), "E"+filmname.get("index")
-                os.remove(str(filepath.get("file").replace("%C3%BC", "ü").replace("%C3%B6", "ö").replace("%C3%A4", "ä").replace("%C3%9F", "ß")))
+                os.remove(urllib2.unquote(str(filepath.get("file"))))
                 datei.write(grandparentTitle.encode('UTF-8') + " S"+filmname.get("parentIndex") + " E"+filmname.get("index") + "\n")
                 datei.write("Gesehen am: " + date_watched + "\n")
                 datei.write("Gelöscht am: " + date_del + "\n")
@@ -91,7 +80,7 @@ for filmname in filme.findall("Video"):
                 datei.write("\n")
             except IOError, ioex:
                 err_datei = open(log_path + "_Err_Log.txt", "w")
-                err_datei.write(filepath.get("file") + "\n")
+                err_datei.write(urllib2.unquote(str(filepath.get("file"))) + "\n")
                 err_datei.write("Gesehen am: " + date_watched + "\n")
                 err_datei.write("Gelöscht am: " + date_del + "\n")
                 err_datei.write(ioex.errno + "\n")
@@ -103,7 +92,7 @@ for filmname in filme.findall("Video"):
                 err_datei.close()
             except:
                 err_datei = open(log_path + "_Err_Log.txt", "w")
-                err_datei.write(filepath.get("file") + "\n")
+                err_datei.write(urllib2.unquote(str(filepath.get("file"))) + "\n")
                 err_datei.write("Gesehen am: " + date_watched + "\n")
                 err_datei.write("Gelöscht am: " + date_del + "\n")
                 err_datei.write("Unbekannter Fehler: "+str(sys.exc_info()[0])+"\n")
